@@ -33,20 +33,20 @@ class GeneratePdfController extends Controller
         if($request->fromMonth > $request->toMonth){
             return back()->withErrors(['fromMonth' => 'Date From Month should not be greater than Date To Month']);
         }
-
+        
         $author = Author::find($request->author);
-
+        
         $pods = collect();
         $totalPods = collect(['title' => 'Grand Total', 'quantity' =>  0, 'price' => 0, 'royalty' => 0]);
         foreach($request->book as $book){
             $podTransactions = PodTransaction::where('author_id', $request->author)->where('book_id', $book)
-                                    ->where('year', '>=', $request->fromYear)->where('year','<=', $request->toYear)
-                                    ->where('month', '>=', (int) $request->fromMonth )->where('month', '<=', (int) $request->toMonth)
-                                    ->where('royalty', '<>', 0)
-                                    ->get();
-
+            ->where('year', '>=', $request->fromYear)->where('year','<=', $request->toYear)
+            ->where('month', '>=', (int) $request->fromMonth )->where('month', '<=', (int) $request->toMonth)
+            ->where('royalty', '<>', 0)
+            ->get();
+            
             if(count($podTransactions) > 0){
-
+                
                 $years = [];
                 $months = [];
                 foreach($podTransactions as $pod)
@@ -58,8 +58,8 @@ class GeneratePdfController extends Controller
                         array_push($months, $pod->month);
                     }
                 }
-
-
+                
+                
                 foreach($years as $year)
                 {
                     foreach($months as $month){
@@ -85,15 +85,16 @@ class GeneratePdfController extends Controller
                 ]);
             }
         }
-
-
+        
+        
         foreach($pods as $pod){
             if(UtilityHelper::hasTotalString($pod)){
                 $totalPods->put('quantity',$totalPods['quantity'] + $pod['quantity']);
                 $totalPods->put('royalty', $totalPods['royalty'] + $pod['royalty']);
+              // dd($pods);
             }
         }
-
+        
 
         $ebooks = collect();
         $totalEbooks = collect(['title' => 'Grand Total' , 'quantity' => 0, 'royalty' => 0]);
